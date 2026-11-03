@@ -12,7 +12,7 @@ No API keys, no proxy, no runtime dependencies beyond Python 3.11+.
 ## Quickstart
 
 ```bash
-uv tool install git+https://github.com/<you>/budgetq   # or: pipx install .
+uv tool install git+https://github.com/TeddySabatier/budgetq   # or: pipx install git+https://github.com/TeddySabatier/budgetq
 cd my-project
 budgetq init
 budgetq import backlog.md
