@@ -66,7 +66,8 @@ class Task:
 class Store:
     def __init__(self, path: Path):
         path.parent.mkdir(parents=True, exist_ok=True)
-        self.db = sqlite3.connect(path)
+        # the runner, CLI and MCP server may hold the database at the same time
+        self.db = sqlite3.connect(path, timeout=15)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
 

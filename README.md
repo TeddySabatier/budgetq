@@ -36,6 +36,44 @@ JSON works too: `[{"prompt": "...", "title": "...", "executor": "cursor", "cwd":
 
 One-offs: `budgetq add "Rename foo to bar across the repo" -e claude -C ../repo`.
 
+## Adding tasks from Claude Code, Cursor or Claude Desktop (MCP)
+
+`budgetq mcp` is an MCP server. Register it once and you can say "add that to my backlog" from any chat, and the agent writes a self-contained task with the right project folder.
+
+Use one queue for everything: create it once, then point every client at it.
+
+```bash
+budgetq init ~/budgetq
+```
+
+**Claude Code** (all projects):
+
+```bash
+claude mcp add budgetq --scope user -- budgetq mcp --home ~/budgetq
+```
+
+**Cursor**: add to `~/.cursor/mcp.json` (all projects):
+
+```json
+{ "mcpServers": { "budgetq": { "command": "budgetq", "args": ["mcp", "--home", "/home/you/budgetq"] } } }
+```
+
+**Claude Desktop**: the same `mcpServers` block in `claude_desktop_config.json` (Settings → Developer → Edit Config).
+
+On Windows, use full paths (`C:\\Users\\you\\budgetq`); if the client can't find `budgetq`, use the full path from `where budgetq`.
+
+Tools exposed:
+
+| Tool | Does |
+|---|---|
+| `add_task` / `add_tasks` | queue tasks (prompt, absolute `cwd`, optional executor, title, priority); a batch is all-or-nothing |
+| `list_tasks` | the queue, or tasks in any status |
+| `budget_status` | quota per executor, whether it may run now and why, queue counts |
+| `recent_runs` | outcome, estimated cost and summary of recent runs |
+| `update_task` | skip a task or requeue it |
+
+Then run the queue as usual with `budgetq run` (or `BUDGETQ_HOME=~/budgetq budgetq run`).
+
 ## Commands
 
 | Command | What it does |
@@ -48,6 +86,7 @@ One-offs: `budgetq add "Rename foo to bar across the repo" -e claude -C ../repo`
 | `budgetq list [-s STATUS]` / `budgetq log [-v]` | tasks / recent runs with cost and usage |
 | `budgetq retry ID...` / `budgetq skip ID...` | requeue / skip tasks |
 | `budgetq pause` / `budgetq resume` | stop or allow runners from another terminal |
+| `budgetq mcp [--home DIR]` | run the MCP server on stdio |
 
 ## How usage is read
 

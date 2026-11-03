@@ -260,6 +260,17 @@ def cmd_resume(args) -> None:
     print("resumed")
 
 
+def cmd_mcp(args) -> None:
+    from .mcp import serve
+
+    home = Path(args.home).expanduser().resolve() if args.home else config_mod.find_home()
+    if home is None or not (home / config_mod.CONFIG_NAME).is_file():
+        sys.exit("budgetq mcp: no budgetq.toml found; pass --home or set BUDGETQ_HOME")
+    if hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8")
+    serve(config_mod.load(home))
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="budgetq", description=__doc__ or "budget-gated backlog runner")
     p.add_argument("--version", action="version", version=f"budgetq {__version__}")
@@ -309,6 +320,10 @@ def build_parser() -> argparse.ArgumentParser:
         s = sub.add_parser(name, help=text)
         s.add_argument("ids", nargs="+", type=int)
         s.set_defaults(func=func)
+
+    s = sub.add_parser("mcp", help="run the MCP server (stdio) so Claude Code, Cursor, etc. can manage the backlog")
+    s.add_argument("--home", help="folder holding budgetq.toml (default: BUDGETQ_HOME or the current folder)")
+    s.set_defaults(func=cmd_mcp)
 
     sub.add_parser("pause", help="stop runners before their next task").set_defaults(func=cmd_pause)
     sub.add_parser("resume", help="undo pause").set_defaults(func=cmd_resume)
