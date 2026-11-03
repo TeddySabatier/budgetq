@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "budgetq"
+version = "0.1.0"
+description = "Budget-gated backlog runner for Claude Code and Cursor CLI: drains a task queue and pauses before your plan quota runs out."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = []
+keywords = ["claude", "claude-code", "cursor", "agents", "budget", "quota", "task-runner"]
+classifiers = [
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+budgetq = "budgetq.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/budgetq"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
