@@ -9,6 +9,8 @@ only; anything else goes to stderr.
 from __future__ import annotations
 
 import json
+import os
+import re
 import sys
 from pathlib import Path
 
@@ -18,6 +20,10 @@ from .gate import DECIDERS
 from .importers import EXECUTORS
 from .runner import Quotas
 from .store import STATUSES, Store
+
+# Security limits
+MAX_PROMPT_LENGTH = 500_000  # 500KB max prompt size
+MAX_COOLDOWN_PATH_LENGTH = 4096  # Max path length to prevent buffer issues
 
 DEFAULT_PROTOCOL = "2025-06-18"
 
@@ -107,12 +113,16 @@ class Server:
         prompt = (spec.get("prompt") or "").strip()
         if not prompt:
             raise ToolError("prompt is required")
+        if len(prompt) > MAX_PROMPT_LENGTH:
+            raise ToolError(f"prompt exceeds {MAX_PROMPT_LENGTH} character limit")
         executor = spec.get("executor") or self.cfg.section("runner")["default_executor"]
         if executor not in EXECUTORS:
             raise ToolError(f"executor must be one of {', '.join(EXECUTORS)}")
         cwd = Path(spec.get("cwd") or self.cfg.home).expanduser()
         if not cwd.is_absolute():
             raise ToolError("cwd must be an absolute path")
+        if len(str(cwd)) > MAX_COOLDOWN_PATH_LENGTH:
+            raise ToolError(f"cwd path exceeds {MAX_COOLDOWN_PATH_LENGTH} character limit")
         if not cwd.is_dir():
             raise ToolError(f"cwd does not exist: {cwd}")
         title = (spec.get("title") or prompt.splitlines()[0])[:80]

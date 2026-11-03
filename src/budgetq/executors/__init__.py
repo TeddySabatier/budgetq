@@ -35,6 +35,18 @@ def kill_tree(proc: subprocess.Popen) -> None:
         except (ProcessLookupError, PermissionError):
             proc.kill()
 
+def _reap_children() -> None:
+    # Reap zombie processes to prevent accumulation
+    try:
+        while True:
+            pid, _ = os.waitpid(-1, os.WNOHANG)
+            if pid == 0:
+                break
+    except ChildProcessError:
+        pass
+    except OSError:
+        pass
+
 
 def popen(cmd: list[str], cwd: str, env: dict | None = None) -> subprocess.Popen:
     kwargs: dict = {}
@@ -73,3 +85,13 @@ def drain(stream, sink) -> threading.Thread:
     thread = threading.Thread(target=pump, daemon=True)
     thread.start()
     return thread
+
+
+def _setup_sigchld_handler() -> None:
+    # Set up SIGCHLD handler to reap zombie processes on Unix systems
+    if sys.platform != "win32":
+        signal.signal(signal.SIGCHLD, lambda signum, frame: _reap_children())
+
+
+# Initialize the SIGCHLD handler for zombie process reaping
+_setup_sigchld_handler()

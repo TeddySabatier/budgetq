@@ -24,7 +24,7 @@ def build_command(cfg: dict) -> list[str]:
         cmd += ["--permission-mode", cfg["permission_mode"]]
     if cfg.get("model"):
         cmd += ["--model", cfg["model"]]
-    cmd += list(cfg.get("extra_args", []))
+    cmd += [arg for arg in cfg.get("extra_args", []) if isinstance(arg, str) and arg.strip()]
     if cfg.get("allowed_tools"):  # variadic flag: keep it last
         cmd += ["--allowedTools", *cfg["allowed_tools"]]
     return cmd
@@ -57,6 +57,8 @@ def run(
     should_abort: Callable[[QuotaState], str | None],
 ) -> RunResult:
     """Run one task. `should_abort` sees every quota update; a non-None reason stops the run."""
+    if not prompt or not isinstance(prompt, str):
+        return RunResult(None, "error", "prompt must be a non-empty string")
     cmd = build_command(cfg)
     if shutil.which(cmd[0]) is None:
         return RunResult(None, "not_found", f"Claude Code not found: {cfg['command'][0]}")

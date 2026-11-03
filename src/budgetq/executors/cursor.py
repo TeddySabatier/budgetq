@@ -56,7 +56,7 @@ def build_command(cfg: dict, cwd: str) -> list[str] | None:
         cmd.append("--force")
     if cfg.get("model"):
         cmd += ["--model", cfg["model"]]
-    return cmd + list(cfg.get("extra_args", []))
+    return cmd + [arg for arg in cfg.get("extra_args", []) if isinstance(arg, str) and arg.strip()]
 
 
 def usage_delta(before: QuotaState | None, after: QuotaState | None) -> dict:
@@ -77,6 +77,8 @@ def usage_delta(before: QuotaState | None, after: QuotaState | None) -> dict:
 
 
 def run(prompt: str, cwd: str, cfg: dict, output_path: Path, timeout: float) -> RunResult:
+    if not prompt or not isinstance(prompt, str):
+        return RunResult(None, "error", "prompt must be a non-empty string")
     cmd = build_command(cfg, cwd)
     if cmd is None:
         return RunResult(None, "not_found", "Cursor CLI not found (install it from cursor.com/cli)")
