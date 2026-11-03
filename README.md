@@ -36,7 +36,7 @@ JSON works too: `[{"prompt": "...", "title": "...", "executor": "cursor", "cwd":
 
 One-offs: `budgetq add "Rename foo to bar across the repo" -e claude -C ../repo`.
 
-## Adding tasks from Claude Code, Cursor or Claude Desktop (MCP)
+## Adding tasks from Claude Code, Cursor, OpenCode or Claude Desktop (MCP)
 
 `budgetq mcp` is an MCP server. Register it once and you can say "add that to my backlog" from any chat, and the agent writes a self-contained task with the right project folder.
 
@@ -56,6 +56,17 @@ claude mcp add budgetq --scope user -- budgetq mcp --home ~/budgetq
 
 ```json
 { "mcpServers": { "budgetq": { "command": "budgetq", "args": ["mcp", "--home", "/home/you/budgetq"] } } }
+```
+
+**OpenCode**: add to `~/.config/opencode/opencode.json` (all projects) or a project's `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "budgetq": { "type": "local", "command": ["budgetq", "mcp", "--home", "/home/you/budgetq"], "enabled": true }
+  }
+}
 ```
 
 **Claude Desktop**: the same `mcpServers` block in `claude_desktop_config.json` (Settings → Developer → Edit Config).
